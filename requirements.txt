@@ -1,0 +1,8 @@
+anthropic
+kafka-python
+langchain-core
+langchain-groq
+langchain-ollama
+langchain-openai
+playwright
+python-telegram-bot
