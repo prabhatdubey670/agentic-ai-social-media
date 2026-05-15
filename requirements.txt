@@ -1,8 +1,9 @@
-anthropic
 kafka-python
 langchain-core
+langchain-google-genai
 langchain-groq
 langchain-ollama
 langchain-openai
 playwright
+python-dotenv
 python-telegram-bot

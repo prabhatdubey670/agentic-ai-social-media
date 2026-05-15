@@ -7,6 +7,12 @@ source code. Defaults keep the app in local/dry-run mode.
 
 import os
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 
 def env(name: str, default: str = "") -> str:
     return os.getenv(name, default)
@@ -24,11 +30,17 @@ def env_bool(name: str, default: bool = False) -> bool:
 # ============================================================
 MODELS = {
     "primary": {
-        "provider": "anthropic",
-        "model": env("ANTHROPIC_MODEL", "claude-sonnet-4-20250514"),
-        "api_key": env("ANTHROPIC_API_KEY", ""),
+        "provider": "openrouter",
+        "model": env("OPENROUTER_MODEL", "openrouter/free"),
+        "api_key": env("OPENROUTER_API_KEY", ""),
+        "base_url": env("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
     },
     "secondary": {
+        "provider": "google_genai",
+        "model": env("GOOGLE_MODEL", "gemini-2.0-flash-lite"),
+        "api_key": env("GOOGLE_API_KEY", ""),
+    },
+    "openai": {
         "provider": "openai",
         "model": env("OPENAI_MODEL", "gpt-4o-mini"),
         "api_key": env("OPENAI_API_KEY", ""),
@@ -44,6 +56,12 @@ MODELS = {
         "base_url": env("OLLAMA_BASE_URL", "http://localhost:11434"),
         "enabled": env_bool("OLLAMA_ENABLED", False),
     },
+    "claude": {
+        "provider": "anthropic",
+        "model": env("ANTHROPIC_MODEL", "claude-sonnet-4-20250514"),
+        "api_key": env("ANTHROPIC_API_KEY", ""),
+        "enabled": env_bool("ANTHROPIC_ENABLED", False),
+    },
 }
 
 TASK_MODEL_MAP = {
@@ -52,7 +70,7 @@ TASK_MODEL_MAP = {
     "post_generation": "primary",
     "dm_generation": "primary",
     "strategy_analysis": "primary",
-    "content_repurpose": "secondary",
+    "content_repurpose": "primary",
 }
 
 # ============================================================

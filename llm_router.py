@@ -5,8 +5,14 @@ Auto-fallback if primary model fails
 """
 
 import json
+import sys
 from typing import Optional
 from config import MODELS, TASK_MODEL_MAP, AGENT_IDENTITY
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 
 class LLMRouter:
@@ -27,7 +33,7 @@ class LLMRouter:
                 provider = cfg["provider"]
                 api_key = cfg.get("api_key", "")
 
-                if provider in {"anthropic", "openai", "groq"} and not api_key:
+                if provider in {"anthropic", "openai", "openrouter", "google_genai", "groq"} and not api_key:
                     print(f"⚠️ {name} ({provider}) skipped: missing API key")
                     continue
 
@@ -44,6 +50,26 @@ class LLMRouter:
                     self._clients[name] = {
                         "type": "langchain",
                         "client": ChatOpenAI(model=cfg["model"], api_key=api_key),
+                        "model": cfg["model"]
+                    }
+
+                elif provider == "openrouter":
+                    from langchain_openai import ChatOpenAI
+                    self._clients[name] = {
+                        "type": "langchain",
+                        "client": ChatOpenAI(
+                            model=cfg["model"],
+                            api_key=api_key,
+                            base_url=cfg.get("base_url", "https://openrouter.ai/api/v1"),
+                        ),
+                        "model": cfg["model"]
+                    }
+
+                elif provider == "google_genai":
+                    from langchain_google_genai import ChatGoogleGenerativeAI
+                    self._clients[name] = {
+                        "type": "langchain",
+                        "client": ChatGoogleGenerativeAI(model=cfg["model"], google_api_key=api_key),
                         "model": cfg["model"]
                     }
 
@@ -99,7 +125,9 @@ class LLMRouter:
         """
         # Get preferred model for task
         preferred = TASK_MODEL_MAP.get(task, "primary")
-        fallback_order = [preferred, "primary", "secondary", "fast", "local"]
+        fallback_order = list(dict.fromkeys([
+            preferred, "primary", "secondary", "fast", "openai", "local", "claude"
+        ]))
 
         for client_name in fallback_order:
             if client_name in self._clients:

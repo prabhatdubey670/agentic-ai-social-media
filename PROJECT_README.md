@@ -80,7 +80,7 @@ Quanteve — all as a solo founder with limited time.
 | Problem | Agent Solution |
 |---------|---------------|
 | No time for daily social media | Automated engagement 24/7 |
-| Generic content performs poorly | Claude AI generates genuine, technical content |
+| Generic content performs poorly | OpenAI/Gemini generates genuine, technical content |
 | Don't know what's working | Full analytics — every action logged |
 | Inconsistent posting | Scheduled post generation daily |
 | Can't track who matters | Top performers tracked in DB |
@@ -105,8 +105,8 @@ A fully automated, AI-powered social media growth system built with:
 **Stack:**
 - Python 3.11+
 - LangChain — multi-model LLM orchestration
-- Anthropic Claude — primary intelligence layer
-- OpenAI GPT / Groq / Ollama — secondary models
+- OpenAI GPT — primary intelligence layer
+- Gemini / Groq / Ollama — fallback and fast models
 - Playwright — browser automation (X.com + LinkedIn)
 - SQLite — persistent storage of all activity
 - Kafka — optional event streaming for analysis
@@ -120,7 +120,7 @@ A fully automated, AI-powered social media growth system built with:
    Content types: insights, threads, questions, project updates.
 
 2. **Engagement**
-   Searches relevant topics. Evaluates posts via Claude.
+   Searches relevant topics. Evaluates posts via the configured LLM router.
    Likes, comments, follows high-value accounts automatically.
    Comments are genuine and technical — never generic.
 
@@ -134,7 +134,7 @@ A fully automated, AI-powered social media growth system built with:
    action success rates, strategy log.
 
 5. **Self-Improvement**
-   After each session, Claude analyzes what worked.
+   After each session, the configured primary LLM analyzes what worked.
    Generates updated strategy. Next session uses improved behavior.
    Agent gets recursively smarter over time.
 
