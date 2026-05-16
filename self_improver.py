@@ -36,12 +36,13 @@ class SelfImprover:
         # 3. Analyze topic performance
         insights["topics"] = self._analyze_topic_performance()
 
-        # 4. Generate strategy updates via LLM
+        # 4. Generate strategy updates via LLM, with a local fallback for
+        #    early/dry-run usage before API keys are configured.
         try:
             strategy = self._generate_strategy_update(insights)
         except Exception as e:
-            print(f"⚠️ Strategy update skipped: {e}")
-            strategy = {}
+            print(f"⚠️ Strategy LLM unavailable, using local fallback: {e}")
+            strategy = self._fallback_strategy_update(insights)
 
         # 5. Save strategy to DB
         if strategy:
@@ -142,6 +143,68 @@ Return JSON:
         if result:
             result["model_used"] = model
         return result
+
+    def _fallback_strategy_update(self, insights: dict) -> dict:
+        """Create an actionable strategy without an LLM provider."""
+        content = insights.get("content", {})
+        engagement = insights.get("engagement", {})
+        topics = insights.get("topics", {})
+
+        best_content_type = content.get("best_content_type", "x_post")
+        total_content = content.get("total_content_generated", 0)
+        top_topics = topics.get("top_topics") or []
+        topic_names = [item.get("topic") for item in top_topics if item.get("topic")]
+
+        if not topic_names:
+            topic_names = TARGET_TOPICS[:3]
+
+        working_well = []
+        if total_content:
+            working_well.append(
+                f"{best_content_type} drafts are the strongest available content signal so far."
+            )
+        else:
+            working_well.append("The local draft queue is ready, but more content data is needed.")
+
+        if engagement.get("status") == "insufficient_data":
+            not_working = ["No engagement actions have been recorded yet."]
+        else:
+            not_working = [
+                "Engagement data is still thin; avoid changing limits until more actions are logged."
+            ]
+
+        daily_actions = [
+            "Review and approve one queued X.com draft before creating more drafts.",
+            f"Create one LinkedIn post around {topic_names[0]} with a concrete systems lesson.",
+            "After posting, log engagement results so topic and action analytics have real feedback.",
+        ]
+
+        actions = "\n".join([
+            "Local fallback strategy:",
+            f"- Prioritize content type: {best_content_type}",
+            f"- Topics to test: {', '.join(topic_names[:3])}",
+            "- Keep automation in dry-run until platform credentials and manual review are ready.",
+            *[f"- {action}" for action in daily_actions],
+        ])
+
+        return {
+            "summary": (
+                "There is enough local draft data to continue the content workflow, "
+                "but not enough engagement data to judge platform performance yet."
+            ),
+            "working_well": working_well,
+            "not_working": not_working,
+            "new_topics_to_try": topic_names[:3],
+            "content_format_changes": (
+                "Use specific technical lessons from trading infrastructure instead of generic AI/ML takes."
+            ),
+            "engagement_changes": (
+                "Start with manual review and low-volume engagement until actions have measurable outcomes."
+            ),
+            "daily_actions": daily_actions,
+            "actions": actions,
+            "model_used": "local-strategy",
+        }
 
     def generate_growth_report(self) -> str:
         """Generate a human-readable growth report"""

@@ -78,9 +78,20 @@ TASK_MODEL_MAP = {
 # ============================================================
 X_USERNAME = env("X_USERNAME", "")
 X_PASSWORD = env("X_PASSWORD", "")
+X_HANDLE = env("X_HANDLE", "")
+X_API_BEARER_TOKEN = env("X_API_BEARER_TOKEN", "")
+X_API_BASE_URL = env("X_API_BASE_URL", "https://api.x.com")
+
+# X API v2 (Tweepy)
+X_API_KEY = env("X_API_KEY", "")
+X_API_SECRET = env("X_API_SECRET", "")
+X_ACCESS_TOKEN = env("X_ACCESS_TOKEN", "")
+X_ACCESS_TOKEN_SECRET = env("X_ACCESS_TOKEN_SECRET", "")
 
 LINKEDIN_EMAIL = env("LINKEDIN_EMAIL", "")
 LINKEDIN_PASSWORD = env("LINKEDIN_PASSWORD", "")
+LINKEDIN_ACCESS_TOKEN = env("LINKEDIN_ACCESS_TOKEN", "")
+LINKEDIN_AUTHOR_URN = env("LINKEDIN_AUTHOR_URN", "") # e.g. urn:li:person:XXXXX
 
 # ============================================================
 # NOTIFICATIONS
@@ -136,8 +147,8 @@ TARGET_ACCOUNTS = [
 # DAILY LIMITS
 # ============================================================
 DAILY_LIMITS = {
-    "x": {"likes": 20, "comments": 6, "follows": 5, "dms": 0, "posts": 2},
-    "linkedin": {"likes": 12, "comments": 4, "follows": 3, "dms": 0, "posts": 1},
+    "x": {"likes": 8, "comments": 2, "follows": 0, "dms": 0, "posts": 1},
+    "linkedin": {"likes": 5, "comments": 1, "follows": 0, "dms": 0, "posts": 1},
 }
 
 POST_SCHEDULE = {
@@ -146,10 +157,10 @@ POST_SCHEDULE = {
 }
 
 DELAYS = {
-    "min_between_actions": 12,
-    "max_between_actions": 35,
-    "min_between_posts": 180,
-    "max_between_posts": 300,
+    "min_between_actions": 45,
+    "max_between_actions": 140,
+    "min_between_posts": 900,
+    "max_between_posts": 1800,
 }
 
 DB_PATH = env("DB_PATH", "quanteve_agent.db")
