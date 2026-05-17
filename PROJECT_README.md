@@ -107,7 +107,9 @@ A fully automated, AI-powered social media growth system built with:
 - LangChain — multi-model LLM orchestration
 - OpenAI GPT — primary intelligence layer
 - Gemini / Groq / Ollama — fallback and fast models
-- Playwright — browser automation (X.com + LinkedIn)
+- X.com API (Tweepy) — official API integration for posting and engagement
+- LinkedIn API — official API integration for posting
+- Playwright — browser automation (LinkedIn engagement only) with stealth mode
 - SQLite — persistent storage of all activity
 - Kafka — optional event streaming for analysis
 - Telegram Bot — real-time notifications
@@ -118,11 +120,13 @@ A fully automated, AI-powered social media growth system built with:
    Generates original technical posts for X.com and LinkedIn daily.
    Topics: ML, AI, quant finance, data science, trading systems.
    Content types: insights, threads, questions, project updates.
+   **Posts are published via official APIs for maximum stability.**
 
 2. **Engagement**
    Searches relevant topics. Evaluates posts via the configured LLM router.
    Likes, comments, follows high-value accounts automatically.
-   Comments are genuine and technical — never generic.
+   Uses X.com API for Twitter engagement.
+   Uses Playwright with `playwright-stealth` for organic LinkedIn engagement.
 
 3. **Data Storage**
    Every post seen, action taken, comment generated, strategy applied

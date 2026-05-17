@@ -28,13 +28,14 @@ python -m playwright install chromium
 
 ### 3. Configure environment
 Copy `.env.example` to `.env` and fill in what you need:
+- `X_API_KEY`, `X_API_SECRET`, `X_ACCESS_TOKEN`, `X_ACCESS_TOKEN_SECRET`: Official X API v2 credentials.
+- `LINKEDIN_ACCESS_TOKEN`, `LINKEDIN_AUTHOR_URN`: Official LinkedIn API credentials.
 - `OPENROUTER_API_KEY` enables `openrouter/free`, the recommended hosted free-model router.
 - `GOOGLE_API_KEY` enables Gemini as fallback.
 - `GROQ_API_KEY` enables the fast/cheap post-evaluation model.
 - `OPENAI_API_KEY` enables OpenAI as paid fallback.
 - `OLLAMA_ENABLED=true` enables a local fallback only if you have hardware for it.
-- `ANTHROPIC_ENABLED=true` enables Claude only if you explicitly want it later.
-- X.com, LinkedIn, and Telegram credentials are only needed for those features.
+- X.com, LinkedIn (email/pass), and Telegram credentials are still used for fallback/engagement modes.
 
 ### 4. Run modes
 
@@ -53,17 +54,17 @@ Approve a queued item:
 python agent.py --mode queue --approve QUEUE_ID
 ```
 
-Full pipeline:
+Full pipeline (API for posting, browser with stealth for LinkedIn engagement):
 ```powershell
 python agent.py --mode full --execute
 ```
 
-Only generate and post content:
+Only generate and post content (uses official APIs, no browser needed):
 ```powershell
 python agent.py --mode post --execute
 ```
 
-Only engage with others:
+Only engage with others (uses X API and LinkedIn browser-stealth):
 ```powershell
 python agent.py --mode engage --execute
 ```
@@ -74,7 +75,7 @@ python agent.py --mode analyze
 ```
 
 By default the app runs in dry-run mode. Use `--execute` only when credentials
-are configured and you want browser automation to click/post.
+are configured and you want official APIs to post or browser automation to engage.
 
 ## Multi-Model Support
 
@@ -85,6 +86,8 @@ Default routing:
 - DM generation -> OpenRouter free router, Gemini fallback, OpenAI fallback
 - Strategy analysis -> OpenRouter free router, Gemini fallback, OpenAI fallback
 - Content repurposing -> OpenRouter free router
+- Official API Integration -> Tweepy (X.com), Requests (LinkedIn)
+- Anti-Detection -> Playwright Stealth for LinkedIn engagement
 
 If a model fails, the router tries the next available provider.
 
