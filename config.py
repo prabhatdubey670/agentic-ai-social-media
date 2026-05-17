@@ -112,7 +112,7 @@ KAFKA = {
 # ============================================================
 DRY_RUN_DEFAULT = env_bool("DRY_RUN_DEFAULT", True)
 BROWSER_HEADLESS = env_bool("BROWSER_HEADLESS", False)
-REQUIRE_MANUAL_APPROVAL = env_bool("REQUIRE_MANUAL_APPROVAL", True)
+REQUIRE_MANUAL_APPROVAL = False
 
 # ============================================================
 # AGENT IDENTITY

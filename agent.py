@@ -17,7 +17,7 @@ import argparse
 import sys
 from datetime import datetime
 from playwright.async_api import async_playwright, Page
-from playwright_stealth import stealth_async
+from playwright_stealth import stealth
 import requests
 import telegram
 import tweepy
@@ -492,7 +492,7 @@ class LinkedInAgent:
             return
         
         print("🔐 Logging into LinkedIn (browser with stealth)...")
-        await stealth_async(self.page)
+        await stealth(self.page)
         await self.page.goto("https://www.linkedin.com/login")
         await asyncio.sleep(random.uniform(2, 4))
         
