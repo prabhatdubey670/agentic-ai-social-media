@@ -197,16 +197,25 @@ class XAgent:
             if not X_USERNAME or not X_PASSWORD:
                 print("⚠️ X_USERNAME/PASSWORD not set, skipping browser login")
                 return
-            print("🔐 Logging into X.com (browser backup)...")
+            print("🔐 Logging into X.com (browser with stealth)...")
             try:
+                await stealth(self.page)
                 await self.page.goto("https://x.com/login")
-                await asyncio.sleep(3)
-                await self.page.fill('input[autocomplete="username"]', X_USERNAME)
-                await self.page.keyboard.press('Enter')
-                await asyncio.sleep(2)
-                await self.page.fill('input[name="password"]', X_PASSWORD)
-                await self.page.keyboard.press('Enter')
-                await asyncio.sleep(4)
+                await asyncio.sleep(random.uniform(3, 5))
+                
+                # Username
+                if await self.page.query_selector('input[autocomplete="username"]'):
+                    await self.page.fill('input[autocomplete="username"]', X_USERNAME)
+                    await self.page.keyboard.press('Enter')
+                    await asyncio.sleep(random.uniform(2, 4))
+                
+                # Sometimes X asks for phone/email verification if login is from new place
+                # We can't automate that easily here, but we try the password
+                if await self.page.query_selector('input[name="password"]'):
+                    await self.page.fill('input[name="password"]', X_PASSWORD)
+                    await self.page.keyboard.press('Enter')
+                    await asyncio.sleep(random.uniform(4, 6))
+                
                 print("✅ X.com browser ready")
             except Exception as e:
                 print(f"⚠️ X.com browser login failed: {e}")
@@ -362,6 +371,10 @@ class XAgent:
     async def run_engagement(self):
         """Engage with others' posts"""
         for topic in TARGET_TOPICS:
+            if self.page and self.page.is_closed():
+                print("⚠️ Browser page closed unexpectedly. Stopping X engagement.")
+                break
+
             if self.counts["likes"] >= DAILY_LIMITS["x"]["likes"]:
                 break
 
@@ -422,15 +435,15 @@ class XAgent:
             print(f"🛑 KILL SWITCH: Already posted {today_count} times to X today. Stopping.")
             return
 
-        # 2. 2-Hour Gap Check
+        # 2. 1-Hour Gap Check for X.com
         last_post = self.db.get_last_post_time(self.PLATFORM)
         if last_post:
             from datetime import timedelta
             diff = datetime.now() - last_post
-            if diff < timedelta(hours=2):
-                wait_mins = int((timedelta(hours=2) - diff).total_seconds() / 60)
-                print(f"⏳ GAP CHECK: Last post was {int(diff.total_seconds() / 60)} mins ago.")
-                print(f"   Skipping original post for now (min 2h gap required). Proceeding to engagement.")
+            if diff < timedelta(hours=1):
+                wait_mins = int((timedelta(hours=1) - diff).total_seconds() / 60)
+                print(f"⏳ GAP CHECK: Last post on X was {int(diff.total_seconds() / 60)} mins ago.")
+                print(f"   Skipping X post for now (min 1h gap required). Proceeding to engagement.")
                 return
 
         posts_to_make = min(DAILY_LIMITS["x"]["posts"], max_daily - today_count)
@@ -665,6 +678,10 @@ class LinkedInAgent:
 
         posts = await self.scrape_feed()
         for post in posts:
+            if self.page.is_closed():
+                print("⚠️ Browser page closed. Stopping LinkedIn engagement.")
+                break
+
             if self.counts["likes"] >= DAILY_LIMITS["linkedin"]["likes"] and \
                self.counts["comments"] >= DAILY_LIMITS["linkedin"]["comments"]:
                 break
@@ -948,25 +965,43 @@ async def main(mode: str = "draft", dry_run: bool = True, approve_id: str = "",
 
     # Engagement logic (Browser-based)
     if mode in ["engage", "full"]:
+        import os
+        user_data_dir = os.path.join(os.getcwd(), "playwright_session")
+        
         async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=BROWSER_HEADLESS)
+            # Use persistent context to store login session/cache
+            browser_context = await p.chromium.launch_persistent_context(
+                user_data_dir=user_data_dir,
+                headless=BROWSER_HEADLESS,
+                slow_mo=50
+            )
 
             # X Engagement: Use browser for search (API free tier 401)
-            x_page = await browser.new_page()
+            x_page = browser_context.pages[0] if browser_context.pages else await browser_context.new_page()
             x_agent.page = x_page
-            await x_agent.login()
+            
+            # Only login if not already logged in (check for search input)
+            await x_page.goto("https://x.com/home")
+            await asyncio.sleep(3)
+            if not await x_page.query_selector('[data-testid="SideNav_AccountMenu_Button"]'):
+                await x_agent.login()
             
             print("\nEngaging on X.com...")
             await x_agent.run_engagement()
 
             # LinkedIn Engagement
-            li_page = await browser.new_page()
+            li_page = await browser_context.new_page()
             li_agent.page = li_page
-            await li_agent.login()
+            
+            await li_page.goto("https://www.linkedin.com/feed/")
+            await asyncio.sleep(3)
+            if "login" in li_page.url or await li_page.query_selector('#username'):
+                await li_agent.login()
+                
             print("\nEngaging on LinkedIn...")
             await li_agent.run_engagement()
 
-            await browser.close()
+            await browser_context.close()
 
     if mode in ["analyze", "full"]:
         print("\nRunning self-improvement cycle...")
