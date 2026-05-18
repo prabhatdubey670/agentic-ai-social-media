@@ -17,5 +17,5 @@ __pycache__/
 
 playwright-report/
 test-results/
-
+playwright_session/
 *.log
