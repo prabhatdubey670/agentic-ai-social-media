@@ -230,6 +230,12 @@ class XAgent:
                             "topic": topic
                         })
                 return posts
+            except tweepy.errors.Forbidden as e:
+                print(f"ℹ️ X API Search is restricted (likely Free tier). Falling back to browser.")
+                self.client = None
+            except tweepy.errors.Unauthorized as e:
+                print(f"ℹ️ X API Search unauthorized. Falling back to browser.")
+                self.client = None
             except Exception as e:
                 print(f"⚠️ X API search failed: {e}")
 
@@ -408,7 +414,28 @@ class XAgent:
 
     async def run_posting(self):
         """Generate and post original content"""
-        posts_to_make = DAILY_LIMITS["x"]["posts"]
+        # 1. Daily Kill switch: Check DB for today's total posts
+        today_count = self.db.get_daily_post_count(self.PLATFORM)
+        max_daily = 10 
+        
+        if today_count >= max_daily:
+            print(f"🛑 KILL SWITCH: Already posted {today_count} times to X today. Stopping.")
+            return
+
+        # 2. 2-Hour Gap Check
+        last_post = self.db.get_last_post_time(self.PLATFORM)
+        if last_post:
+            from datetime import timedelta
+            diff = datetime.now() - last_post
+            if diff < timedelta(hours=2):
+                wait_mins = int((timedelta(hours=2) - diff).total_seconds() / 60)
+                print(f"⏳ GAP CHECK: Last post was {int(diff.total_seconds() / 60)} mins ago. Waiting {wait_mins} more mins.")
+                return
+
+        posts_to_make = min(DAILY_LIMITS["x"]["posts"], max_daily - today_count)
+        
+        if posts_to_make <= 0:
+            return
 
         if not self.dry_run:
             approved = [
@@ -463,8 +490,11 @@ class XAgent:
                     await self.notifier.action("post", self.PLATFORM,
                                                f"Posted: {post_text[:80]}...")
                     print(f"📝 Posted to X: {post_text[:60]}...")
-                    await asyncio.sleep(random.uniform(DELAYS["min_between_posts"],
-                                                        DELAYS["max_between_posts"]))
+                    
+                    # Only sleep if there are more posts to make
+                    if self.counts["posts"] < posts_to_make:
+                        await asyncio.sleep(random.uniform(DELAYS["min_between_posts"],
+                                                            DELAYS["max_between_posts"]))
 
 
 # ============================================================
@@ -676,7 +706,25 @@ class LinkedInAgent:
 
     async def run_posting(self):
         """Generate and post original content via API"""
-        posts_to_make = DAILY_LIMITS["linkedin"]["posts"]
+        # 1. Daily Kill switch
+        today_count = self.db.get_daily_post_count(self.PLATFORM)
+        max_daily = 10 
+        
+        if today_count >= max_daily:
+            print(f"🛑 KILL SWITCH: Already posted {today_count} times to LinkedIn today. Stopping.")
+            return
+
+        # 2. 2-Hour Gap Check
+        last_post = self.db.get_last_post_time(self.PLATFORM)
+        if last_post:
+            from datetime import timedelta
+            diff = datetime.now() - last_post
+            if diff < timedelta(hours=2):
+                wait_mins = int((timedelta(hours=2) - diff).total_seconds() / 60)
+                print(f"⏳ GAP CHECK: Last post on LinkedIn was {int(diff.total_seconds() / 60)} mins ago. Waiting {wait_mins} more mins.")
+                return
+
+        posts_to_make = min(DAILY_LIMITS["linkedin"]["posts"], max_daily - today_count)
 
         if not self.dry_run:
             approved = [
@@ -726,8 +774,11 @@ class LinkedInAgent:
                             "linkedin_post", post_data.get("model_used", ""))
                         await self.notifier.action("post", self.PLATFORM,
                                                    f"Posted: {post_text[:80]}...")
-                        await asyncio.sleep(random.uniform(DELAYS["min_between_posts"],
-                                                            DELAYS["max_between_posts"]))
+                        
+                        # Only sleep if there are more posts to make
+                        if self.counts["posts"] < posts_to_make:
+                            await asyncio.sleep(random.uniform(DELAYS["min_between_posts"],
+                                                                DELAYS["max_between_posts"]))
 
 
 # ============================================================
@@ -769,11 +820,10 @@ async def legacy_main(mode: str = "full"):
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=BROWSER_HEADLESS)
             
-            # Update X agent with page for backup/engagement if no API
-            if not x_agent.client:
-                x_page = await browser.new_page()
-                x_agent.page = x_page
-                await x_agent.login()
+            # X engagement: always use browser for search if possible to avoid 401
+            x_page = await browser.new_page()
+            x_agent.page = x_page
+            await x_agent.login()
             
             print("\n🤝 Engaging on X.com...")
             await x_agent.run_engagement()
@@ -899,11 +949,10 @@ async def main(mode: str = "draft", dry_run: bool = True, approve_id: str = "",
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=BROWSER_HEADLESS)
 
-            # X Engagement
-            if not x_agent.client:
-                x_page = await browser.new_page()
-                x_agent.page = x_page
-                await x_agent.login()
+            # X Engagement: Use browser for search (API free tier 401)
+            x_page = await browser.new_page()
+            x_agent.page = x_page
+            await x_agent.login()
             
             print("\nEngaging on X.com...")
             await x_agent.run_engagement()

@@ -141,6 +141,36 @@ class Database:
                 (pid, platform, post_text, topic, post_type, model))
         return pid
 
+    def get_daily_post_count(self, platform: str) -> int:
+        """Count how many posts were published today for a platform."""
+        with self._conn() as conn:
+            cursor = conn.execute('''
+                SELECT COUNT(*) FROM posts_published 
+                WHERE platform = ? AND date(posted_at) = date('now')
+            ''', (platform,))
+            return cursor.fetchone()[0]
+
+    def get_last_post_time(self, platform: str) -> Optional[datetime]:
+        """Get the timestamp of the last post published on a platform."""
+        with self._conn() as conn:
+            cursor = conn.execute('''
+                SELECT posted_at FROM posts_published 
+                WHERE platform = ? 
+                ORDER BY posted_at DESC LIMIT 1
+            ''', (platform,))
+            row = cursor.fetchone()
+            if row:
+                # Handle both sqlite timestamp types
+                ts = row[0]
+                if isinstance(ts, str):
+                    try:
+                        return datetime.strptime(ts, '%Y-%m-%d %H:%M:%S')
+                    except ValueError:
+                        # Fallback for ISO format if needed
+                        return datetime.fromisoformat(ts)
+                return ts
+            return None
+
     def save_strategy(self, name, insight, action, model) -> str:
         sid = str(uuid.uuid4())
         with self._conn() as conn:

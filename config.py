@@ -147,7 +147,7 @@ TARGET_ACCOUNTS = [
 # DAILY LIMITS
 # ============================================================
 DAILY_LIMITS = {
-    "x": {"likes": 8, "comments": 2, "follows": 0, "dms": 0, "posts": 1},
+    "x": {"likes": 8, "comments": 2, "follows": 0, "dms": 0, "posts": 10},
     "linkedin": {"likes": 5, "comments": 1, "follows": 0, "dms": 0, "posts": 1},
 }
 
@@ -157,10 +157,10 @@ POST_SCHEDULE = {
 }
 
 DELAYS = {
-    "min_between_actions": 45,
-    "max_between_actions": 140,
-    "min_between_posts": 900,
-    "max_between_posts": 1800,
+    "min_between_actions": 30,
+    "max_between_actions": 60,
+    "min_between_posts": 60, # Reduced from 900 for faster testing
+    "max_between_posts": 120,
 }
 
 DB_PATH = env("DB_PATH", "quanteve_agent.db")

@@ -77,14 +77,15 @@ A fully automated, AI-powered social media growth system built with:
 
 1. **Post Generation**
    Generates original technical posts for X.com and LinkedIn daily.
-   Topics: ML, AI, quant finance, data science, trading systems.
-   Content types: insights, threads, questions, project updates.
-   **Posts are published via official APIs for maximum stability.**
+   **Safety Limits:** 
+   - Enforces a minimum **2-hour gap** between posts on the same platform.
+   - Enforces a hard limit of **10 posts per day** per platform.
+   - **Posts are published via official APIs for maximum stability.**
 
 2. **Engagement**
    Searches relevant topics. Evaluates posts via the configured LLM router.
    Likes, comments, follows high-value accounts automatically.
-   Uses X.com API for Twitter engagement.
+   Uses X.com API for Twitter engagement (with browser fallback for search).
    Uses Playwright with `playwright-stealth` for organic LinkedIn engagement.
 
 3. **Data Storage**
