@@ -429,7 +429,8 @@ class XAgent:
             diff = datetime.now() - last_post
             if diff < timedelta(hours=2):
                 wait_mins = int((timedelta(hours=2) - diff).total_seconds() / 60)
-                print(f"⏳ GAP CHECK: Last post was {int(diff.total_seconds() / 60)} mins ago. Waiting {wait_mins} more mins.")
+                print(f"⏳ GAP CHECK: Last post was {int(diff.total_seconds() / 60)} mins ago.")
+                print(f"   Skipping original post for now (min 2h gap required). Proceeding to engagement.")
                 return
 
         posts_to_make = min(DAILY_LIMITS["x"]["posts"], max_daily - today_count)
@@ -721,7 +722,8 @@ class LinkedInAgent:
             diff = datetime.now() - last_post
             if diff < timedelta(hours=2):
                 wait_mins = int((timedelta(hours=2) - diff).total_seconds() / 60)
-                print(f"⏳ GAP CHECK: Last post on LinkedIn was {int(diff.total_seconds() / 60)} mins ago. Waiting {wait_mins} more mins.")
+                print(f"⏳ GAP CHECK: Last post on LinkedIn was {int(diff.total_seconds() / 60)} mins ago.")
+                print(f"   Skipping LinkedIn post for now (min 2h gap required). Proceeding to engagement.")
                 return
 
         posts_to_make = min(DAILY_LIMITS["linkedin"]["posts"], max_daily - today_count)
