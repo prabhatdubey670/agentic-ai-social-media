@@ -1,90 +1,49 @@
-# Quanteve Agent — Project README
-## Who I Am | What I'm Building | Why This Exists
+# Research Agent — Project README
+## Personal Learning | Quant Systems | AI Research
 
 ---
 
-## 👤 Who I Am
+## 👤 About Me
 
 **Name:** Prabhat Dubey
-**Age:** 23
 **Location:** Raipur, Chhattisgarh, India
-**Company:** Quanteve Technologies (founder)
 
-I am a self-taught freelance developer with 3+ years of experience building
+I am a self-taught developer with 3+ years of experience building
 quantitative trading infrastructure. My core expertise is in high-frequency
-trading systems, FIX protocol, low-latency architecture, Kafka pipelines,
-and order book data engineering — built entirely through real client work,
-not formal employment.
+trading systems, FIX protocol, low-latency architecture, and data engineering.
 
-I hold a BSc in Computer Science (online) from BITS Pilani Digital,
-and I am currently self-learning AI/ML and Data Science to expand
-Quanteve's capabilities beyond trading infrastructure into broader
-intelligence and research.
-
-**Current client:** Barry (US-based institutional trader) — HFT systems,
-FIX protocol, IBKR connectivity, real-time market data pipelines.
-
-**Upwork:** Top Rated badge. Specialization in algorithmic trading,
-trading infrastructure, Python, C#.
+I am currently self-learning AI/ML and Data Science to expand my
+capabilities in intelligence and research.
 
 ---
 
-## 🏢 What is Quanteve Technologies
+## 🏢 My Focus
 
-Quanteve Technologies is a research-driven data science and AI/ML company
-I am building from scratch — starting as a solo founder.
+I am building a research-driven pipeline for data science and AI/ML,
+starting with high-frequency financial data and moving into broader
+intelligence systems.
 
-**Vision:** A globally distributed research and technology company that
-builds intelligent systems at the intersection of quantitative finance,
-machine learning, and data intelligence.
-
-**Long-term goals:**
-- AI/ML research for financial markets and beyond
-- Orderbook behavior research — short-term and long-term price dynamics
-- Reminiov — memory preservation AI (personal legacy project)
-- AGI consciousness research (frontier, long-term)
-- Animal welfare initiative — Jerry Memorial Fund
-- 50+ person global team by 2030
-- Entities in India, Singapore, Dubai, Europe
-
-**Current stage:** Solo founder. Freelance consulting for revenue.
-Building ML skills and portfolio in parallel.
-
----
-
-## 🧠 What I Was Doing Before This Agent
-
-Before building this agent, my social media presence was essentially zero.
-
-The problems I faced:
-- Zero network outside Upwork
-- No LinkedIn or X.com presence
-- No content strategy
-- No time to manually engage with 50+ relevant people daily
-- Needed to build credibility in AI/ML + quant space simultaneously
-- Needed Quanteve to become a known name — not just a freelancer profile
-
-I knew the strategy: engage genuinely, post consistently, build network.
-But I had no system, no consistency, and no leverage to do it at scale.
+**Research goals:**
+- AI/ML research for financial markets
+- Orderbook behavior research
+- Personal memory preservation (Reminiov project)
+- AGI and consciousness research
 
 ---
 
 ## 🤖 Why I Built This AI Agent
 
 This agent exists because I need to build a professional network and
-content presence simultaneously while working, learning ML, and building
-Quanteve — all as a solo founder with limited time.
+share my research journey while managing my technical work and learning ML.
 
 **The problem it solves:**
 
-| Problem | Agent Solution |
+| Problem | Solution |
 |---------|---------------|
-| No time for daily social media | Automated engagement 24/7 |
-| Generic content performs poorly | OpenAI/Gemini generates genuine, technical content |
-| Don't know what's working | Full analytics — every action logged |
-| Inconsistent posting | Scheduled post generation daily |
-| Can't track who matters | Top performers tracked in DB |
-| No feedback loop | Self-improvement after every session |
+| Limited time for networking | Automated engagement 24/7 |
+| Inconsistent presence | Scheduled post generation daily |
+| Learning in public is hard | AI-assisted drafting and analysis |
+| Missing insights | Full analytics on what resonates |
 
 **This is not a vanity project.**
 

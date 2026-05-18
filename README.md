@@ -1,4 +1,4 @@
-# Quanteve Social Media Agent v5
+# Research & Engagement Agent v5
 ## Multi-Model | Full Logging | Self-Improving | Analytics
 
 ## Architecture

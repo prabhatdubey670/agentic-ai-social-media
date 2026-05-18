@@ -82,7 +82,7 @@ class ContentGenerator:
         top_topics = self.db.get_topic_performance()
         best_topics = [t[0] for t in top_topics[:3]] if top_topics else TARGET_TOPICS[:3]
 
-        prompt = f"""You are {AGENT_IDENTITY['name']}, founder of {AGENT_IDENTITY['company']}.
+        prompt = f"""You are {AGENT_IDENTITY['name']}.
 {AGENT_IDENTITY['description']}
 
 Generate an original X.com post about: {topic}
@@ -139,7 +139,7 @@ Return JSON only:
         topic = topic or random.choice(TARGET_TOPICS)
         post_type = post_type or random.choice(LINKEDIN_TYPES)
 
-        prompt = f"""You are {AGENT_IDENTITY['name']}, founder of {AGENT_IDENTITY['company']}.
+        prompt = f"""You are {AGENT_IDENTITY['name']}.
 {AGENT_IDENTITY['description']}
 
 Generate a LinkedIn post about: {topic}
@@ -221,7 +221,7 @@ Return JSON:
 
     def generate_comment(self, post_text: str, author: str, platform: str) -> dict:
         """Generate a genuine comment for a post"""
-        prompt = f"""You are {AGENT_IDENTITY['name']} from {AGENT_IDENTITY['company']}.
+        prompt = f"""You are {AGENT_IDENTITY['name']}.
 
 Write a genuine, valuable comment on this {platform} post:
 
@@ -264,7 +264,7 @@ Return JSON:
     def generate_dm(self, profile_name: str, profile_bio: str,
                     platform: str, context: str = "") -> dict:
         """Generate a personalized DM"""
-        prompt = f"""You are {AGENT_IDENTITY['name']} from {AGENT_IDENTITY['company']}.
+        prompt = f"""You are {AGENT_IDENTITY['name']}.
 
 Write a personalized DM to connect with:
 Name: {profile_name}
@@ -274,7 +274,6 @@ Context: {context}
 Rules:
 - 2-3 sentences max
 - Reference something specific about their work
-- Mention Quanteve Technologies briefly
 - Clear reason for reaching out
 - No ask in first message — just genuine connection
 - Not salesy

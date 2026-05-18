@@ -113,7 +113,7 @@ class PostEvaluator:
     def evaluate(self, post_text: str, author: str, platform: str,
                  topic: str = "") -> dict:
         from config import AGENT_IDENTITY
-        prompt = f"""You are a social media engagement agent for {AGENT_IDENTITY['company']}.
+        prompt = f"""You are a social media engagement agent for {AGENT_IDENTITY['name']}.
 
 Evaluate this {platform} post for engagement:
 Author: {author}
