@@ -504,11 +504,14 @@ class XAgent:
                     await self.notifier.action("post", self.PLATFORM,
                                                f"Posted: {post_text[:80]}...")
                     print(f"📝 Posted to X: {post_text[:60]}...")
-                    
-                    # Only sleep if there are more posts to make
-                    if self.counts["posts"] < posts_to_make:
-                        await asyncio.sleep(random.uniform(DELAYS["min_between_posts"],
-                                                            DELAYS["max_between_posts"]))
+                else:
+                    # Even on failure, wait a bit to avoid hitting X too hard
+                    await asyncio.sleep(30)
+                
+                # Only sleep if there are more posts to make
+                if self.counts["posts"] < posts_to_make:
+                    await asyncio.sleep(random.uniform(DELAYS["min_between_posts"],
+                                                        DELAYS["max_between_posts"]))
 
 
 # ============================================================
