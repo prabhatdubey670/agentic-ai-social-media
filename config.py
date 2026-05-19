@@ -147,7 +147,7 @@ TARGET_ACCOUNTS = [
 # DAILY LIMITS
 # ============================================================
 DAILY_LIMITS = {
-    "x": {"likes": 8, "comments": 2, "follows": 0, "dms": 0, "posts": 10},
+    "x": {"likes": 8, "comments": 2, "follows": 0, "dms": 0, "posts": 1},
     "linkedin": {"likes": 5, "comments": 1, "follows": 0, "dms": 0, "posts": 1},
 }
 

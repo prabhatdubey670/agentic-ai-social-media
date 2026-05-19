@@ -435,15 +435,15 @@ class XAgent:
             print(f"🛑 KILL SWITCH: Already posted {today_count} times to X today. Stopping.")
             return
 
-        # 2. 1-Hour Gap Check for X.com
+        # 2. 2-Hour Gap Check for X.com
         last_post = self.db.get_last_post_time(self.PLATFORM)
         if last_post:
             from datetime import timedelta
             diff = datetime.now() - last_post
-            if diff < timedelta(hours=1):
-                wait_mins = int((timedelta(hours=1) - diff).total_seconds() / 60)
+            if diff < timedelta(hours=2):
+                wait_mins = int((timedelta(hours=2) - diff).total_seconds() / 60)
                 print(f"⏳ GAP CHECK: Last post on X was {int(diff.total_seconds() / 60)} mins ago.")
-                print(f"   Skipping X post for now (min 1h gap required). Proceeding to engagement.")
+                print(f"   Skipping X post for now (min 2h gap required). Proceeding to engagement.")
                 return
 
         posts_to_make = min(DAILY_LIMITS["x"]["posts"], max_daily - today_count)
