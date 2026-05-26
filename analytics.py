@@ -5,7 +5,7 @@ Prints reports, generates insights, tracks growth
 
 import sqlite3
 from datetime import datetime
-from storage import Database
+from memory.database import Database
 from llm_router import LLMRouter
 from config import DB_PATH
 

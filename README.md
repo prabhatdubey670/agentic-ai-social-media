@@ -3,12 +3,10 @@
 
 ## Architecture
 ```
-agent.py (orchestrator)
-├── llm_router.py          -> OpenAI + Gemini + Groq + Ollama routing
-├── storage.py             -> SQLite activity log
-├── content_generator.py   -> Post + comment + DM generation
-├── analytics.py           -> Dashboard + CSV export
-├── self_improver.py       -> Recursive self-improvement
+orchestrator/main.py (Supervisor)
+├── workers/               -> Specialized Cognitive Agents (Content, Scouting)
+├── platforms/             -> Execution Engines (X, LinkedIn)
+├── memory/                -> Data Layer (SQLite)
 └── config.py              -> Environment-driven settings
 ```
 

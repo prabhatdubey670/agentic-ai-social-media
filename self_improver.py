@@ -7,7 +7,7 @@ This is what makes the agent get smarter over time
 import json
 from datetime import datetime, timedelta
 from llm_router import LLMRouter
-from storage import Database
+from memory.database import Database
 from config import AGENT_IDENTITY, TARGET_TOPICS
 
 
