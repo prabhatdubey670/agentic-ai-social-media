@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.concurrency import run_in_threadpool
 import sys
 import os
 from typing import List, Optional
@@ -29,6 +30,9 @@ app.add_middleware(
 )
 
 db = Database()
+llm = LLMRouter()
+creator = ContentCreator(llm, db)
+analyst = MarketAnalyst(llm, db)
 
 # Pydantic models for response data
 class PostDraft(BaseModel):
@@ -63,8 +67,6 @@ async def get_profile():
     x_platform = XPlatform(None, db, dry_run=True)
     metrics = await x_platform.get_profile_metrics()
     
-    # LinkedIn metrics (Simplified for now - can scrape via Playwright later)
-    # We combine them or return separate
     return {
         "x": metrics,
         "linkedin": {"followers": "N/A", "connections": "N/A"} 
@@ -99,12 +101,10 @@ class GenerateRequest(BaseModel):
 @app.post("/api/generate")
 async def generate_instant(req: GenerateRequest):
     """Generate content on-demand for a topic"""
-    llm = LLMRouter()
-    creator = ContentCreator(llm, db)
     if req.platform.lower() == "x.com":
-        draft = creator.generate_x_post(topic=req.topic)
+        draft = await run_in_threadpool(creator.generate_x_post, req.topic)
     else:
-        draft = creator.generate_linkedin_post(topic=req.topic)
+        draft = await run_in_threadpool(creator.generate_linkedin_post, req.topic)
     return {"draft": draft.get("post_text", ""), "topic": req.topic, "platform": req.platform}
 
 class PublishRequest(BaseModel):
@@ -129,17 +129,13 @@ async def publish_instant(req: PublishRequest):
 @app.get("/api/world-update")
 async def get_world_update():
     """Fetch 5-point summary of world technical trends"""
-    llm = LLMRouter()
-    analyst = MarketAnalyst(llm, db)
-    summary = analyst.get_world_summary()
+    summary = await run_in_threadpool(analyst.get_world_summary)
     return {"summary": summary}
 
 @app.get("/api/peers/suggest")
-async def suggest_peers():
+async def get_suggested_peers():
     """AI suggests 10 peers to follow/monitor"""
-    llm = LLMRouter()
-    analyst = MarketAnalyst(llm, db)
-    peers = analyst.suggest_peers()
+    peers = await run_in_threadpool(analyst.suggest_peers)
     return {"peers": peers}
 
 class PeerRequest(BaseModel):
@@ -158,7 +154,7 @@ async def add_peer(req: PeerRequest):
     )
     return {"status": "success"}
 
-@app.get("/api/agent/run")
+@app.post("/api/agent/run")
 async def run_agent(mode: str, background_tasks: BackgroundTasks):
     """Trigger an agent run in the background"""
     if mode not in ["post", "engage", "full"]:

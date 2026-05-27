@@ -42,27 +42,44 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
 
   useEffect(() => {
-    loadAll();
+    // Initial core load
+    loadCoreData();
   }, []);
 
-  const loadAll = async () => {
+  useEffect(() => {
+    // Background load slower intelligence data
+    if (!loading) {
+      loadIntelligenceData();
+    }
+  }, [loading]);
+
+  const loadCoreData = async () => {
     try {
-      const [dbData, queueData, profileData, worldData, peersData] = await Promise.all([
+      const [dbData, queueData, profileData] = await Promise.all([
         fetchDashboardData(),
         fetchQueue(),
-        fetchProfileStats(),
-        fetchWorldUpdate(),
-        fetchSuggestedPeers()
+        fetchProfileStats()
       ]);
       setData(dbData);
       setQueue(queueData);
       setProfile(profileData);
+    } catch (err) {
+      console.error("Core fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadIntelligenceData = async () => {
+    try {
+      const [worldData, peersData] = await Promise.all([
+        fetchWorldUpdate(),
+        fetchSuggestedPeers()
+      ]);
       setWorldUpdate(worldData.summary);
       setSuggestedPeers(peersData.peers);
     } catch (err) {
-      console.error("Fetch error:", err);
-    } finally {
-      setLoading(false);
+      console.error("Intelligence fetch error:", err);
     }
   };
 
@@ -73,12 +90,11 @@ export default function Dashboard() {
     await addManualPeer(handle, platform, newPeerUrl);
     setNewPeerUrl("");
     alert("Peer added to tracking list!");
-    loadAll();
   };
 
   const handleApprove = async (id: string) => {
     await approvePost(id);
-    loadAll();
+    loadCoreData();
   };
 
   const handleRun = async (mode: string) => {
@@ -107,7 +123,7 @@ export default function Dashboard() {
       alert("Successfully published!");
       setQuickDraft("");
       setQuickTopic("");
-      loadAll();
+      loadCoreData();
     } catch (err) {
       alert("Publishing failed");
     } finally {
@@ -115,7 +131,15 @@ export default function Dashboard() {
     }
   };
 
-  if (loading) return <div className="p-10 text-center">Loading Intelligence...</div>;
+  if (loading) return (
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 font-sans">
+      <div className="text-center">
+        <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent mx-auto"></div>
+        <p className="text-xl font-bold text-blue-900">Initializing Intelligence...</p>
+        <p className="text-sm text-gray-500">Connecting to your research brain...</p>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 p-8 font-sans text-gray-900">
@@ -125,7 +149,7 @@ export default function Dashboard() {
           <p className="text-gray-500 italic text-sm">Managing {data?.identity?.name}'s personal brand</p>
         </div>
         <div className="flex gap-4">
-          <nav className="flex bg-gray-200 p-1 rounded-xl mr-4">
+          <nav className="flex bg-gray-200 p-1 rounded-xl mr-4 shadow-inner">
             <button 
               onClick={() => setActiveTab('dashboard')}
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'dashboard' ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
@@ -252,15 +276,15 @@ export default function Dashboard() {
               <h2 className="mb-4 text-lg font-semibold text-gray-800">Profile Overview</h2>
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b pb-2">
-                  <span className="text-sm font-medium text-gray-500 text-xs uppercase">X Followers</span>
+                  <span className="text-sm font-medium text-gray-500 text-xs uppercase tracking-wider">X Followers</span>
                   <span className="text-lg font-bold text-blue-600">{profile?.x?.followers || '--'}</span>
                 </div>
                 <div className="flex items-center justify-between border-b pb-2">
-                  <span className="text-sm font-medium text-gray-500 text-xs uppercase">LinkedIn Conn.</span>
+                  <span className="text-sm font-medium text-gray-500 text-xs uppercase tracking-wider">LinkedIn Conn.</span>
                   <span className="text-lg font-bold text-blue-600">{profile?.linkedin?.connections || '--'}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-500 text-xs uppercase">Avg. Engagement</span>
+                  <span className="text-sm font-medium text-gray-500 text-xs uppercase tracking-wider">Avg. Engagement</span>
                   <span className="text-lg font-bold text-green-600">8.4%</span>
                 </div>
               </div>
@@ -308,31 +332,45 @@ export default function Dashboard() {
               <h2 className="mb-4 text-xl font-bold text-gray-800 flex items-center gap-2">
                 🌍 World at a Glance
               </h2>
-              <div className="space-y-4">
-                {worldUpdate.map((point, i) => (
-                  <div key={i} className="flex gap-4 items-start bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-                    <span className="bg-blue-600 text-white rounded-full h-6 w-6 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">{i+1}</span>
-                    <p className="text-sm text-gray-700 font-medium leading-relaxed">{point}</p>
-                  </div>
-                ))}
-              </div>
+              {worldUpdate.length === 0 ? (
+                <div className="py-10 text-center space-y-3">
+                   <div className="h-6 w-6 border-2 border-blue-500 border-t-transparent animate-spin rounded-full mx-auto"></div>
+                   <p className="text-sm text-gray-400">AI is reading world trends...</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {worldUpdate.map((point, i) => (
+                    <div key={i} className="flex gap-4 items-start bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+                      <span className="bg-blue-600 text-white rounded-full h-6 w-6 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">{i+1}</span>
+                      <p className="text-sm text-gray-700 font-medium leading-relaxed">{point}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </section>
 
             {/* Peer Suggestions */}
             <section className="rounded-xl bg-white p-6 shadow-sm border border-gray-100">
               <h2 className="mb-4 text-xl font-bold text-gray-800">Recommended for Your Network</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {suggestedPeers.map((peer, i) => (
-                  <div key={i} className="p-4 rounded-lg border border-gray-100 bg-gray-50 hover:border-blue-200 transition-colors">
-                    <div className="flex justify-between items-start mb-2">
-                      <p className="font-bold text-blue-900">{peer.name}</p>
-                      <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold uppercase">{peer.platform}</span>
+              {suggestedPeers.length === 0 ? (
+                <div className="py-10 text-center space-y-3">
+                   <div className="h-6 w-6 border-2 border-blue-500 border-t-transparent animate-spin rounded-full mx-auto"></div>
+                   <p className="text-sm text-gray-400">Finding high-value peers...</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {suggestedPeers.map((peer, i) => (
+                    <div key={i} className="p-4 rounded-lg border border-gray-100 bg-gray-50 hover:border-blue-200 transition-colors">
+                      <div className="flex justify-between items-start mb-2">
+                        <p className="font-bold text-blue-900">{peer.name}</p>
+                        <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold uppercase">{peer.platform}</span>
+                      </div>
+                      <p className="text-xs text-blue-600 font-medium mb-2">{peer.handle}</p>
+                      <p className="text-[11px] text-gray-500 leading-relaxed">{peer.reason}</p>
                     </div>
-                    <p className="text-xs text-blue-600 font-medium mb-2">{peer.handle}</p>
-                    <p className="text-[11px] text-gray-500 leading-relaxed">{peer.reason}</p>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </section>
           </div>
 
