@@ -163,4 +163,5 @@ DELAYS = {
     "max_between_posts": 120,
 }
 
-DB_PATH = env("DB_PATH", "quanteve_agent.db")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = env("DB_PATH", os.path.join(BASE_DIR, "quanteve_agent.db"))

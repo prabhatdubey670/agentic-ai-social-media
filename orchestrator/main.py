@@ -121,7 +121,8 @@ class Supervisor:
         
         # Initialize Platforms
         if self.mode in ["post", "engage", "full"]:
-            user_data_dir = os.path.join(os.getcwd(), "playwright_session")
+            from config import BASE_DIR
+            user_data_dir = os.path.join(BASE_DIR, "playwright_session")
             
             async with async_playwright() as p:
                 browser_context = await p.chromium.launch_persistent_context(

@@ -10,6 +10,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from memory.database import Database
 from orchestrator.main import Supervisor
+from workers.content_creator import ContentCreator
+from platforms.x_platform import XPlatform
+from platforms.linkedin_platform import LinkedInPlatform
+from llm_router import LLMRouter
 from config import TARGET_TOPICS, AGENT_IDENTITY
 
 app = FastAPI(title="Quanteve AI Social Media Manager API")
@@ -72,6 +76,40 @@ async def approve_item(item_id: str):
 async def get_published():
     """Get recently published posts"""
     return db.get_published_posts(limit=20)
+
+class GenerateRequest(BaseModel):
+    topic: str
+    platform: str
+
+@app.post("/api/generate")
+async def generate_instant(req: GenerateRequest):
+    """Generate content on-demand for a topic"""
+    llm = LLMRouter()
+    creator = ContentCreator(llm, db)
+    if req.platform.lower() == "x.com":
+        draft = creator.generate_x_post(topic=req.topic)
+    else:
+        draft = creator.generate_linkedin_post(topic=req.topic)
+    return {"draft": draft.get("post_text", ""), "topic": req.topic, "platform": req.platform}
+
+class PublishRequest(BaseModel):
+    text: str
+    platform: str
+
+@app.post("/api/publish")
+async def publish_instant(req: PublishRequest):
+    """Publish content immediately to a platform"""
+    if req.platform.lower() == "x.com":
+        platform = XPlatform(None, db, dry_run=False)
+    else:
+        platform = LinkedInPlatform(None, db, dry_run=False)
+    
+    success = await platform.post_content(req.text)
+    if success:
+        db.save_published_post(req.platform, req.text, "instant-manual", "post", "manual-ui")
+        db.update_daily_stats(req.platform, "posts_published")
+    
+    return {"status": "success" if success else "failed"}
 
 @app.post("/api/agent/run")
 async def run_agent(mode: str, background_tasks: BackgroundTasks):
