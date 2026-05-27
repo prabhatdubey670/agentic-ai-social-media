@@ -47,3 +47,31 @@ export async function publishInstant(text: string, platform: string) {
   if (!res.ok) throw new Error("Failed to publish content");
   return res.json();
 }
+
+export async function fetchProfileStats() {
+  const res = await fetch(`${API_BASE_URL}/api/profile`);
+  if (!res.ok) throw new Error("Failed to fetch profile stats");
+  return res.json();
+}
+
+export async function fetchWorldUpdate() {
+  const res = await fetch(`${API_BASE_URL}/api/world-update`);
+  if (!res.ok) throw new Error("Failed to fetch world update");
+  return res.json();
+}
+
+export async function fetchSuggestedPeers() {
+  const res = await fetch(`${API_BASE_URL}/api/peers/suggest`);
+  if (!res.ok) throw new Error("Failed to fetch suggested peers");
+  return res.json();
+}
+
+export async function addManualPeer(handle: string, platform: string, url: string = "") {
+  const res = await fetch(`${API_BASE_URL}/api/peers`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ handle, platform, url }),
+  });
+  if (!res.ok) throw new Error("Failed to add peer");
+  return res.json();
+}

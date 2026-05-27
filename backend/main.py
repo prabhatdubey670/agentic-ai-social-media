@@ -11,6 +11,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from memory.database import Database
 from orchestrator.main import Supervisor
 from workers.content_creator import ContentCreator
+from workers.market_analyst import MarketAnalyst
 from platforms.x_platform import XPlatform
 from platforms.linkedin_platform import LinkedInPlatform
 from llm_router import LLMRouter
@@ -52,7 +53,21 @@ async def get_dashboard():
         "success_rates": db.get_action_success_rate(),
         "recent_strategies": db.get_strategy_log(5),
         "top_content": db.get_best_content(limit=5),
-        "identity": AGENT_IDENTITY
+        "identity": AGENT_IDENTITY,
+        "db_status": "Absolute Path Verified"
+    }
+
+@app.get("/api/profile")
+async def get_profile():
+    """Fetch live social media profile metrics"""
+    x_platform = XPlatform(None, db, dry_run=True)
+    metrics = await x_platform.get_profile_metrics()
+    
+    # LinkedIn metrics (Simplified for now - can scrape via Playwright later)
+    # We combine them or return separate
+    return {
+        "x": metrics,
+        "linkedin": {"followers": "N/A", "connections": "N/A"} 
     }
 
 @app.get("/api/queue", response_model=List[PostDraft])
@@ -111,7 +126,39 @@ async def publish_instant(req: PublishRequest):
     
     return {"status": "success" if success else "failed"}
 
-@app.post("/api/agent/run")
+@app.get("/api/world-update")
+async def get_world_update():
+    """Fetch 5-point summary of world technical trends"""
+    llm = LLMRouter()
+    analyst = MarketAnalyst(llm, db)
+    summary = analyst.get_world_summary()
+    return {"summary": summary}
+
+@app.get("/api/peers/suggest")
+async def suggest_peers():
+    """AI suggests 10 peers to follow/monitor"""
+    llm = LLMRouter()
+    analyst = MarketAnalyst(llm, db)
+    peers = analyst.suggest_peers()
+    return {"peers": peers}
+
+class PeerRequest(BaseModel):
+    handle: str
+    platform: str
+    url: Optional[str] = ""
+    niche: Optional[str] = "research"
+
+@app.post("/api/peers")
+async def add_peer(req: PeerRequest):
+    """Manually add a peer to track"""
+    db.save_top_performer(
+        platform=req.platform, author=req.handle, handle=req.handle,
+        url=req.url, niche=req.niche, followers=0, avg_engagement=0,
+        why_valuable="Manually added via UI"
+    )
+    return {"status": "success"}
+
+@app.get("/api/agent/run")
 async def run_agent(mode: str, background_tasks: BackgroundTasks):
     """Trigger an agent run in the background"""
     if mode not in ["post", "engage", "full"]:

@@ -213,3 +213,20 @@ class XPlatform(BasePlatform):
             except Exception as e:
                 print(f"⚠️ X browser search error: {e}")
         return posts
+
+    async def get_profile_metrics(self) -> dict:
+        """Fetch live follower and following counts"""
+        if self.client:
+            try:
+                me = self.client.get_me(user_auth=True, user_fields=['public_metrics'])
+                if me.data:
+                    metrics = me.data.public_metrics
+                    return {
+                        "followers": metrics.get('followers_count', 0),
+                        "following": metrics.get('following_count', 0),
+                        "posts": metrics.get('tweet_count', 0)
+                    }
+            except Exception as e:
+                print(f"⚠️ X API profile fetch failed: {e}")
+        
+        return {"followers": 0, "following": 0, "posts": 0}
