@@ -153,3 +153,4 @@ class LinkedInPlatform(BasePlatform):
             print(f"⚠️ LinkedIn feed scrape error: {e}")
             
         return posts[:10]
+     return posts[:10]
