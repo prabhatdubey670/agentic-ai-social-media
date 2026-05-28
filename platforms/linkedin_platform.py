@@ -28,21 +28,32 @@ class LinkedInPlatform(BasePlatform):
         
         print("🔐 Logging into LinkedIn (browser with stealth)...")
         try:
-            await stealth(self.page)
+            from playwright_stealth import Stealth
+            await Stealth().apply_stealth_async(self.page)
             await self.page.goto("https://www.linkedin.com/login")
             await asyncio.sleep(random.uniform(2, 4))
             
-            username_selector = '#username, input[id="session_key"], input[type="email"], input[autocomplete*="username"]'
-            password_selector = '#password, input[id="session_password"], input[type="password"]'
+            # Try an extremely generic approach to find the FIRST visible text/email and password inputs
+            visible_username = await self.page.query_selector('input[type="text"]:visible, input[type="email"]:visible, #username:visible')
+            visible_password = await self.page.query_selector('input[type="password"]:visible, #password:visible')
             
-            await self.page.fill(username_selector, LINKEDIN_EMAIL)
-            await asyncio.sleep(random.uniform(0.5, 1.5))
-            await self.page.fill(password_selector, LINKEDIN_PASSWORD)
-            await asyncio.sleep(random.uniform(0.5, 1.5))
-            
-            await self.page.click('[type="submit"]')
-            await asyncio.sleep(random.uniform(5, 8))
-            print("✅ LinkedIn browser ready")
+            if visible_username and visible_password:
+                await visible_username.fill(LINKEDIN_EMAIL)
+                await asyncio.sleep(random.uniform(0.5, 1.5))
+                await visible_password.fill(LINKEDIN_PASSWORD)
+                await asyncio.sleep(random.uniform(0.5, 1.5))
+                
+                # Attempt to find the submit button
+                submit_btn = await self.page.query_selector('button[type="submit"]:visible, .login__form_action_container button:visible')
+                if submit_btn:
+                    await submit_btn.click()
+                else:
+                    await self.page.keyboard.press('Enter') # Fallback to Enter key
+                
+                await asyncio.sleep(random.uniform(5, 8))
+                print("✅ LinkedIn browser ready")
+            else:
+                print("⚠️ LinkedIn browser login: Could not find visible input fields. The page might be asking for verification or displaying a CAPTCHA.")
         except Exception as e:
             print(f"⚠️ LinkedIn browser login failed: {e}")
 
@@ -153,4 +164,4 @@ class LinkedInPlatform(BasePlatform):
             print(f"⚠️ LinkedIn feed scrape error: {e}")
             
         return posts[:10]
-     return posts[:10]
+     
