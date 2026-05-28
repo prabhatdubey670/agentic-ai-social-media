@@ -32,9 +32,12 @@ class LinkedInPlatform(BasePlatform):
             await self.page.goto("https://www.linkedin.com/login")
             await asyncio.sleep(random.uniform(2, 4))
             
-            await self.page.fill('#username', LINKEDIN_EMAIL)
+            username_selector = '#username, input[id="session_key"], input[type="email"], input[autocomplete*="username"]'
+            password_selector = '#password, input[id="session_password"], input[type="password"]'
+            
+            await self.page.fill(username_selector, LINKEDIN_EMAIL)
             await asyncio.sleep(random.uniform(0.5, 1.5))
-            await self.page.fill('#password', LINKEDIN_PASSWORD)
+            await self.page.fill(password_selector, LINKEDIN_PASSWORD)
             await asyncio.sleep(random.uniform(0.5, 1.5))
             
             await self.page.click('[type="submit"]')

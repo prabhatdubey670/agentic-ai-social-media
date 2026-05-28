@@ -49,13 +49,15 @@ class XPlatform(BasePlatform):
             await self.page.goto("https://x.com/login")
             await asyncio.sleep(random.uniform(3, 5))
             
-            if await self.page.query_selector('input[autocomplete="username"]'):
-                await self.page.fill('input[autocomplete="username"]', X_USERNAME)
+            username_selector = 'input[autocomplete*="username"], input[name="text"], input[name="username_or_email"]'
+            if await self.page.query_selector(username_selector):
+                await self.page.fill(username_selector, X_USERNAME)
                 await self.page.keyboard.press('Enter')
                 await asyncio.sleep(random.uniform(2, 4))
             
-            if await self.page.query_selector('input[name="password"]'):
-                await self.page.fill('input[name="password"]', X_PASSWORD)
+            password_selector = 'input[name="password"], input[type="password"]'
+            if await self.page.query_selector(password_selector):
+                await self.page.fill(password_selector, X_PASSWORD)
                 await self.page.keyboard.press('Enter')
                 await asyncio.sleep(random.uniform(4, 6))
             
