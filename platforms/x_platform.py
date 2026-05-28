@@ -7,7 +7,7 @@ import random
 import tweepy
 import requests
 from playwright.async_api import Page
-from playwright_stealth import stealth
+from playwright_stealth import Stealth
 from platforms.base_platform import BasePlatform
 from memory.database import Database
 from config import (X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET,
@@ -45,7 +45,7 @@ class XPlatform(BasePlatform):
         
         print("🔐 Logging into X.com (browser with stealth)...")
         try:
-            await stealth(self.page)
+            await Stealth().apply_stealth_async(self.page)
             await self.page.goto("https://x.com/login")
             await asyncio.sleep(random.uniform(3, 5))
             
